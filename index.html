@@ -34,7 +34,7 @@
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;}
   .app{display:flex;flex-direction:column;min-height:100dvh;}
- 
+
   .header{background:var(--surface);border-bottom:0.5px solid var(--border);padding:calc(var(--safe-top) + 14px) 20px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
   .greeting{font-size:20px;font-weight:600;color:var(--text);}
   .header-date{font-size:13px;color:var(--text3);margin-top:1px;}
@@ -43,23 +43,23 @@
   .icon-btn:active{background:var(--surface2);}
   .today-pill{font-size:12px;color:var(--text2);padding:4px 10px;border:0.5px solid var(--border2);border-radius:20px;background:none;cursor:pointer;}
   .today-pill:active{background:var(--surface2);}
- 
+
   .content{flex:1;overflow-y:auto;padding:16px 16px calc(var(--safe-bot) + 80px);}
- 
+
   .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:0.5px solid var(--border);padding:8px 0 calc(var(--safe-bot) + 6px);display:flex;z-index:100;}
   .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px;background:none;border:none;color:var(--text3);font-size:10px;}
   .nav-item i{font-size:22px;}
   .nav-item.active{color:var(--green);}
- 
+
   .page{display:none;}
   .page.active{display:block;}
- 
+
   .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
   .stat-card{background:var(--surface2);border-radius:var(--radius-md);padding:12px 14px;}
   .stat-lbl{font-size:11px;color:var(--text3);margin-bottom:4px;}
   .stat-val{font-size:22px;font-weight:600;color:var(--text);}
   .stat-sub{font-size:11px;color:var(--text3);margin-top:2px;}
- 
+
   .chart-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px;}
   .chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
   .chart-title{font-size:14px;font-weight:600;color:var(--text);}
@@ -69,14 +69,14 @@
   .legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
   .leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
   .leg-dot{width:8px;height:8px;border-radius:2px;}
- 
+
   .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px;}
   .card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
   .card-title i{font-size:16px;color:var(--text3);}
- 
+
   .section-lbl{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin:14px 0 8px;}
   .section-lbl:first-child{margin-top:0;}
- 
+
   .habit-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius-md);border:0.5px solid var(--border);background:var(--surface);cursor:pointer;margin-bottom:8px;transition:all 0.15s;}
   .habit-row:last-child{margin-bottom:0;}
   .habit-row:active{opacity:0.7;}
@@ -97,9 +97,9 @@
   .habit-row.done .hname{color:var(--text2);}
   .hsub{font-size:11px;color:var(--text3);margin-top:1px;}
   .hstreak{font-size:11px;color:var(--text3);white-space:nowrap;flex-shrink:0;}
- 
- 
- 
+
+
+
   .nutr-toggle{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-md);border:0.5px solid var(--border);background:var(--surface);cursor:pointer;margin-bottom:8px;transition:all 0.15s;}
   .nutr-toggle:active{opacity:0.7;}
   .nutr-toggle.hit{background:var(--amber-bg);border-color:transparent;}
@@ -111,7 +111,7 @@
   .nt-sub{font-size:11px;color:var(--text3);margin-top:1px;}
   .nt-streak{font-size:12px;color:var(--text3);flex-shrink:0;}
   .nutr-toggle.hit .nt-streak{color:var(--amber);}
- 
+
   .cal-ring-wrap{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
   .cal-ring{position:relative;width:80px;height:80px;flex-shrink:0;}
   .cal-ring svg{transform:rotate(-90deg);}
@@ -125,7 +125,7 @@
   .macro-bar-bg{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
   .macro-bar-fill{height:100%;border-radius:3px;transition:width 0.3s;}
   .macro-val-lbl{font-size:11px;color:var(--text3);min-width:52px;text-align:right;}
- 
+
   .food-form{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
   .food-form-row{display:flex;gap:6px;}
   .food-form input{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;font-size:14px;color:var(--text);flex:1;min-width:0;outline:none;}
@@ -140,7 +140,7 @@
   .food-item-macros span{color:var(--text3);}
   .del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:0 4px;display:flex;align-items:center;}
   .del-btn:active{color:var(--red);}
- 
+
   .hm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .hm-inner{display:flex;align-items:flex-start;gap:4px;width:max-content;}
   .hm-days-col{display:grid;grid-template-rows:repeat(7,11px);gap:2px;padding-top:16px;}
@@ -155,7 +155,7 @@
   .hm-cell[data-l="4"]{background:#3B6D11;}
   .hm-legend{display:flex;align-items:center;gap:4px;margin-top:8px;font-size:10px;color:var(--text3);}
   .hm-leg-cells{display:flex;gap:2px;}
- 
+
   .streak-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .streak-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;}
   .sc-head{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
@@ -171,7 +171,7 @@
 </head>
 <body>
 <div class="app">
- 
+
   <div class="header">
     <div>
       <div class="greeting" id="greeting">Good morning</div>
@@ -183,9 +183,9 @@
       <button class="icon-btn" onclick="changeDay(1)" id="next-btn" aria-label="Next day"><i class="ti ti-chevron-right"></i></button>
     </div>
   </div>
- 
+
   <div class="content">
- 
+
     <div id="page-home" class="page active">
       <div class="stats-row">
         <div class="stat-card"><div class="stat-lbl">Today</div><div class="stat-val" id="h-today">—</div><div class="stat-sub" id="h-today-pct">0% done</div></div>
@@ -233,13 +233,13 @@
         <div class="hm-legend">Less <div class="hm-leg-cells"><div class="hm-cell"></div><div class="hm-cell" data-l="1"></div><div class="hm-cell" data-l="2"></div><div class="hm-cell" data-l="3"></div><div class="hm-cell" data-l="4"></div></div> More</div>
       </div>
     </div>
- 
+
     <div id="page-habits" class="page">
       <div id="habits-full-list"></div>
       <div class="section-lbl">Nutrition</div>
       <div id="habits-nutr-toggle"></div>
     </div>
- 
+
     <div id="page-nutrition" class="page">
       <div id="nutr-toggle-full"></div>
       <div class="card">
@@ -261,7 +261,7 @@
         <div id="food-log-list"></div>
       </div>
     </div>
- 
+
     <div id="page-streaks" class="page">
       <div class="stats-row">
         <div class="stat-card"><div class="stat-lbl">Best active streak</div><div class="stat-val" id="s-best">0d</div><div class="stat-sub">current</div></div>
@@ -269,9 +269,9 @@
       </div>
       <div class="streak-grid" id="streak-grid"></div>
     </div>
- 
+
   </div>
- 
+
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="showPage('home',this)" aria-label="Home"><i class="ti ti-home"></i><span>Home</span></button>
     <button class="nav-item" onclick="showPage('habits',this)" aria-label="Habits"><i class="ti ti-check"></i><span>Habits</span></button>
@@ -279,11 +279,11 @@
     <button class="nav-item" onclick="showPage('streaks',this)" aria-label="Streaks"><i class="ti ti-flame"></i><span>Streaks</span></button>
   </nav>
 </div>
- 
+
 <script>
 const HABITS_KEY='habits_v1',DATA_KEY='habit_data_v1',FOOD_KEY='food_log_v2',NUTR_KEY='nutrition_hit_v1',STEPS_KEY='steps_v1';
 const STEP_GOAL=10000;
- 
+
 const DEFAULT_HABITS=[
   {id:'h1',name:'Deep work block',sub:'2+ hours focused',cat:'work'},
   {id:'h2',name:'Clear inbox',sub:'Reach inbox zero',cat:'work'},
@@ -295,11 +295,11 @@ const DEFAULT_HABITS=[
   {id:'h8',name:'Learn something new',sub:'Course, podcast, or article',cat:'growth'},
   {id:'h9',name:'Journaling',sub:'Reflect on the day',cat:'growth'},
 ];
- 
+
 const GOALS={cal:1458,protein:152,carbs:100,fat:50};
 const CAT_COLORS={work:'#639922',health:'#378ADD',growth:'#7F77DD',nutrition:'#BA7517'};
 const CAT_NAMES={work:'Work & productivity',health:'Health & fitness',growth:'Personal growth'};
- 
+
 let habits=JSON.parse(localStorage.getItem(HABITS_KEY)||'null')||DEFAULT_HABITS;
 habits=habits.map(h=>{
   if(h.id==='h4')return{...h,name:'Exercise',sub:'1 hour of movement'};
@@ -307,15 +307,15 @@ habits=habits.map(h=>{
   return h;
 });
 localStorage.setItem(HABITS_KEY,JSON.stringify(habits));
- 
+
 let data=JSON.parse(localStorage.getItem(DATA_KEY)||'{}');
 let foodLog=JSON.parse(localStorage.getItem(FOOD_KEY)||'{}');
 let nutritionHits=JSON.parse(localStorage.getItem(NUTR_KEY)||'{}');
 let stepsLog=JSON.parse(localStorage.getItem(STEPS_KEY)||'{}');
 let currentOffset=0,chartRange=7,progressChart=null,currentPage='home';
- 
+
 const TOTAL_ITEMS=habits.length+2; // +steps +nutrition
- 
+
 function save(){
   try{
     localStorage.setItem(HABITS_KEY,JSON.stringify(habits));
@@ -327,7 +327,7 @@ function save(){
 }
 function dk(o=0){const d=new Date();d.setDate(d.getDate()+o);return d.toISOString().slice(0,10);}
 function fmtDate(o=0){const d=new Date();d.setDate(d.getDate()+o);if(o===0)return'Today';if(o===-1)return'Yesterday';return d.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});}
- 
+
 function updateHeader(){
   const hr=new Date().getHours();
   document.getElementById('greeting').textContent=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
@@ -336,7 +336,7 @@ function updateHeader(){
   document.getElementById('today-pill').textContent=fmtDate(currentOffset);
   document.getElementById('next-btn').disabled=currentOffset>=0;
 }
- 
+
 function showPage(name,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
@@ -361,7 +361,7 @@ function goToday(){
   if(currentPage==='habits')renderHabitsFull();
   if(currentPage==='nutrition')renderNutritionPage();
 }
- 
+
 function toggle(id){
   const key=dk(currentOffset);
   if(!data[key])data[key]={};
@@ -405,10 +405,10 @@ function logSteps(){
   if(currentPage==='home')renderHome();
   if(currentPage==='habits')renderHabitsFull();
 }
- 
+
 function daySteps(o=currentOffset){return stepsLog[dk(o)]||0;}
 function stepsHit(o=currentOffset){return daySteps(o)>=STEP_GOAL;}
- 
+
 function totalForDay(key){
   const off=Object.keys(data).indexOf(key); // not used
   const d=new Date(key);
@@ -419,7 +419,7 @@ function totalForDay(key){
   const nDone=nutritionHits[key]?1:0;
   return hDone+sDone+nDone;
 }
- 
+
 function getStreak(id,isN=false,isS=false){
   let s=0,off=currentOffset;
   while(true){
@@ -447,7 +447,7 @@ function totalComp(id,isN=false,isS=false){
   if(isN)return Object.values(nutritionHits).filter(Boolean).length;
   return Object.values(data).filter(d=>d&&d[id]).length;
 }
- 
+
 function macroRingHTML(cal,calPct){
   const r=36,circ=2*Math.PI*r,offset=circ*(1-Math.min(1,calPct/100));
   const rc=cal>GOALS.cal?'#E24B4A':'#D85A30';
@@ -456,7 +456,7 @@ function macroRingHTML(cal,calPct){
     <div class="ring-label"><div class="ring-num">${Math.round(cal)}</div><div class="ring-sub">/ ${GOALS.cal}</div></div>
   </div>`;
 }
- 
+
 function stepsRowHTML(){
   const key=dk(currentOffset);
   const hit=(stepsLog[key]||0)>=STEP_GOAL;
@@ -467,7 +467,7 @@ function stepsRowHTML(){
     <div class="hstreak"><i class="ti ti-flame" aria-hidden="true"></i> ${streak}d</div>
   </div>`;
 }
- 
+
 function renderHome(){
   updateHeader();
   const key=dk(currentOffset);
@@ -475,7 +475,7 @@ function renderHome(){
   const pct=Math.round(done/TOTAL_ITEMS*100);
   document.getElementById('h-today').textContent=done+'/'+TOTAL_ITEMS;
   document.getElementById('h-today-pct').textContent=pct+'% done';
- 
+
   let t30=0,p30=0;
   for(let i=0;i<30;i++){
     const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);
@@ -487,7 +487,7 @@ function renderHome(){
   const allS=[...habits.map(h=>getStreak(h.id)),getStreak(null,true),getStreak(null,false,true)];
   document.getElementById('h-streak').textContent=Math.max(...allS,0)+'d';
   document.getElementById('h-days').textContent=Object.keys(data).length;
- 
+
   const dayData=data[key]||{};
   let html='';
   ['work','health','growth'].forEach(cat=>{
@@ -501,7 +501,7 @@ function renderHome(){
   const nHit=!!nutritionHits[key];
   html+=`<div class="section-lbl">Nutrition</div><div class="habit-row ${nHit?'done nutrition':''}" onclick="toggleNutr()"><div class="hcheck"><i class="ti ti-check"></i></div><div class="habit-info"><div class="hname">Hit nutrition targets</div></div></div>`;
   document.getElementById('home-habits-list').innerHTML=html;
- 
+
   const items=foodLog[key]||[];
   const tot=items.reduce((a,f)=>({cal:a.cal+f.cal,p:a.p+f.p,c:a.c+f.c,f:a.f+f.f}),{cal:0,p:0,c:0,f:0});
   document.getElementById('home-nutrition').innerHTML=`
@@ -515,7 +515,7 @@ function renderHome(){
     </div>`;
   renderHeatmap();
 }
- 
+
 function renderChart(){
   const labels=[],wD=[],hD=[],gD=[],nD=[];
   const wH=habits.filter(h=>h.cat==='work'),hH=habits.filter(h=>h.cat==='health'),gH=habits.filter(h=>h.cat==='growth');
@@ -548,7 +548,7 @@ function renderChart(){
   });
 }
 function setChartRange(r,btn){chartRange=r;document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChart();}
- 
+
 function renderHeatmap(){
   const year=new Date().getFullYear();
   const start=new Date(year,0,1),end=new Date(year,11,31);
@@ -578,7 +578,7 @@ function renderHeatmap(){
     if(mp[idx]!==undefined){const s=document.createElement('div');s.className='hm-month-lbl';s.textContent=m;s.style.marginLeft=((mp[idx]-col)*13)+'px';col=mp[idx];mEl.appendChild(s);}
   });
 }
- 
+
 function renderHabitsFull(){
   const key=dk(currentOffset);const dayData=data[key]||{};
   let html='';
@@ -598,7 +598,7 @@ function renderHabitsFull(){
     <div class="nt-streak"><i class="ti ti-flame" aria-hidden="true"></i> ${nS}d</div>
   </div>`;
 }
- 
+
 function renderNutritionPage(){
   const key=dk(currentOffset);const nHit=!!nutritionHits[key];const nS=getStreak(null,true);
   document.getElementById('nutr-toggle-full').innerHTML=`<div class="nutr-toggle ${nHit?'hit':''}" onclick="toggleNutr()" style="margin-bottom:14px">
@@ -639,7 +639,7 @@ function deleteFood(id){
   foodLog[key]=(foodLog[key]||[]).filter(f=>f.id!==id);
   save();renderNutritionPage();
 }
- 
+
 function renderStreaks(){
   const allS=[...habits.map(h=>getStreak(h.id)),getStreak(null,true),getStreak(null,false,true)];
   document.getElementById('s-best').textContent=Math.max(...allS,0)+'d';
@@ -664,11 +664,10 @@ function renderStreaks(){
     grid.innerHTML+=`<div class="streak-card"><div class="sc-head"><div class="sc-dot" style="background:${color}"></div><div class="sc-name">${h.name}</div></div><div class="sc-nums"><div><div class="sc-num-val">${streak}</div><div class="sc-num-lbl">Now</div></div><div><div class="sc-num-val">${longest}</div><div class="sc-num-lbl">Best</div></div><div><div class="sc-num-val">${total}</div><div class="sc-num-lbl">Total</div></div></div><div class="sc-week">${week.map(d=>`<div class="sc-day" style="${d?'background:'+color+';':''}"></div>`).join('')}</div></div>`;
   });
 }
- 
+
 updateHeader();
 renderHome();
 setTimeout(renderChart,100);
 </script>
 </body>
 </html>
- 
