@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Daily"/>
+<title>Daily</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:#0e0e0d; --surface:#161614; --surface2:#1e1e1b; --surface3:#252522;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.14);
+  --text:#f2ede6; --text2:#9a9489; --text3:#5a5751;
+  --accent:#c8a96e; --accent-dim:rgba(200,169,110,0.12); --accent-glow:rgba(200,169,110,0.25);
+  --green:#7aad4a; --green-bg:rgba(122,173,74,0.12);
+  --blue:#5a9fd4; --blue-bg:rgba(90,159,212,0.12);
+  --purple:#9b8fe0; --purple-bg:rgba(155,143,224,0.12);
+  --amber:#d4904a; --amber-bg:rgba(212,144,74,0.12);
+  --red:#d45a5a; --red-bg:rgba(212,90,90,0.12);
+  --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+  --font-serif:'DM Serif Display',Georgia,serif; --font-sans:'DM Sans',sans-serif;
+  --r:12px; --r-lg:16px; --r-xl:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:16px;-webkit-font-smoothing:antialiased;}
+.app{display:flex;flex-direction:column;min-height:100dvh;}
+
+/* Sync */
+.sync-bar{height:1px;position:fixed;top:0;left:0;right:0;z-index:200;}
+.sync-bar.syncing{background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:shimmer-sync 1.2s infinite;}
+@keyframes shimmer-sync{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.sync-pill{position:fixed;top:calc(var(--safe-top)+10px);right:16px;z-index:201;font-size:11px;color:var(--text3);background:var(--surface2);border:0.5px solid var(--border);padding:3px 10px;border-radius:20px;opacity:0;transition:opacity 0.3s;}
+.sync-pill.show{opacity:1;}
+
+/* Header */
+.header{padding:calc(var(--safe-top)+20px) 20px 16px;position:sticky;top:0;z-index:100;background:linear-gradient(180deg,var(--bg) 70%,transparent);}
+.header-inner{display:flex;align-items:flex-start;justify-content:space-between;}
+.greeting{font-family:var(--font-serif);font-size:26px;color:var(--text);line-height:1.1;}
+.greeting em{font-style:italic;color:var(--accent);}
+.header-date{font-size:12px;color:var(--text3);margin-top:4px;letter-spacing:0.04em;text-transform:uppercase;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.header-ring{position:relative;width:44px;height:44px;flex-shrink:0;}
+.header-ring svg{transform:rotate(-90deg);}
+.ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);}
+.date-nav{display:flex;align-items:center;gap:6px;margin-top:10px;}
+.nav-arrow{background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--r);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:14px;transition:all 0.15s;}
+.nav-arrow:active{background:var(--surface3);}
+.nav-arrow:disabled{opacity:0.3;}
+.today-chip{font-size:11px;color:var(--text2);padding:0 10px;height:32px;display:flex;align-items:center;background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--r);cursor:pointer;font-family:var(--font-sans);transition:all 0.15s;}
+.today-chip:active{background:var(--surface3);}
+/* Budget header variant */
+.budget-header-inner{display:flex;align-items:flex-start;justify-content:space-between;}
+.app-title{font-family:var(--font-serif);font-size:26px;font-style:italic;color:var(--accent);}
+.period-badge{font-size:11px;color:var(--text3);background:var(--surface2);border:0.5px solid var(--border);padding:4px 12px;border-radius:20px;font-family:var(--font-sans);}
+
+/* Content */
+.content{flex:1;overflow-y:auto;padding:8px 16px calc(var(--safe-bot)+76px);}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;padding:10px 0 calc(var(--safe-bot)+8px);display:flex;background:linear-gradient(0deg,var(--bg) 60%,transparent);z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px;background:none;border:none;color:var(--text3);font-size:10px;font-family:var(--font-sans);transition:color 0.15s;}
+.nav-item i{font-size:22px;}
+.nav-item.active{color:var(--accent);}
+
+/* Pages */
+.page{display:none;animation:fadeUp 0.25s ease;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Progress bar */
+.day-progress{margin-bottom:22px;}
+.progress-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-xl);padding:16px 18px;position:relative;overflow:hidden;}
+.progress-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);}
+.progress-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
+.progress-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;}
+.progress-fraction{font-family:var(--font-serif);font-size:22px;color:var(--text);line-height:1;}
+.progress-fraction span{font-size:13px;color:var(--text3);font-family:var(--font-sans);}
+.progress-track{height:8px;background:var(--surface3);border-radius:6px;overflow:hidden;position:relative;margin-bottom:12px;}
+.progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#b8843e,var(--accent),#f0d080);background-size:200% 100%;transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1);position:relative;animation:shimmer-bar 2.5s linear infinite;}
+.progress-fill::after{content:'';position:absolute;top:0;right:0;width:20px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25));border-radius:0 6px 6px 0;}
+@keyframes shimmer-bar{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.progress-segments{display:flex;gap:6px;}
+.progress-seg{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.seg-dot{width:6px;height:6px;border-radius:50%;background:var(--surface3);transition:background 0.3s;}
+.seg-dot.done{background:var(--accent);box-shadow:0 0 6px rgba(200,169,110,0.5);}
+.seg-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
+
+/* Stat cards */
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);}
+.stat-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.stat-val{font-family:var(--font-serif);font-size:26px;color:var(--text);line-height:1;}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* Chart */
+.chart-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-xl);padding:16px;margin-bottom:20px;}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.chart-title{font-family:var(--font-serif);font-size:17px;color:var(--text);}
+.chart-range{display:flex;gap:4px;}
+.cr-btn{font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;border:0.5px solid var(--border2);background:none;color:var(--text3);font-family:var(--font-sans);transition:all 0.15s;}
+.cr-btn.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-glow);}
+.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);}
+.leg-dot{width:6px;height:6px;border-radius:50%;}
+
+/* Sections */
+.sec-lbl{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
+.sec-lbl::after{content:'';flex:1;height:0.5px;background:var(--border);}
+.sec-lbl:first-child{margin-top:0;}
+
+/* Habit rows */
+.habit-list{display:flex;flex-direction:column;gap:8px;margin-bottom:4px;}
+.habit-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:var(--r-lg);border:0.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);position:relative;overflow:hidden;}
+.habit-row::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.2s;}
+.habit-row:active{transform:scale(0.98);}
+.habit-row.done{border-color:transparent;}
+.habit-row.done.work{background:var(--green-bg);}
+.habit-row.done.work::before{background:linear-gradient(135deg,rgba(122,173,74,0.06),transparent);opacity:1;}
+.habit-row.done.health{background:var(--blue-bg);}
+.habit-row.done.health::before{background:linear-gradient(135deg,rgba(90,159,212,0.06),transparent);opacity:1;}
+.habit-row.done.growth{background:var(--purple-bg);}
+.habit-row.done.growth::before{background:linear-gradient(135deg,rgba(155,143,224,0.06),transparent);opacity:1;}
+.habit-row.done.nutrition{background:var(--amber-bg);}
+.habit-row.done.nutrition::before{background:linear-gradient(135deg,rgba(212,144,74,0.06),transparent);opacity:1;}
+.hcheck{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);}
+.habit-row.done.work .hcheck{background:var(--green);border-color:var(--green);box-shadow:0 0 10px rgba(122,173,74,0.3);}
+.habit-row.done.health .hcheck{background:var(--blue);border-color:var(--blue);box-shadow:0 0 10px rgba(90,159,212,0.3);}
+.habit-row.done.growth .hcheck{background:var(--purple);border-color:var(--purple);box-shadow:0 0 10px rgba(155,143,224,0.3);}
+.habit-row.done.nutrition .hcheck{background:var(--amber);border-color:var(--amber);box-shadow:0 0 10px rgba(212,144,74,0.3);}
+.hcheck i{font-size:13px;color:white;display:none;}
+.habit-row.done .hcheck i{display:block;}
+.hinfo{flex:1;min-width:0;}
+.hname{font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.habit-row.done .hname{color:var(--text2);}
+.hsub{font-size:11px;color:var(--text3);margin-top:2px;}
+.hstreak{font-size:11px;color:var(--text3);flex-shrink:0;display:flex;align-items:center;gap:3px;}
+.hstreak i{font-size:12px;}
+.habit-row.done.work .hstreak{color:var(--green);}
+.habit-row.done.health .hstreak{color:var(--blue);}
+.habit-row.done.growth .hstreak{color:var(--purple);}
+.habit-row.done.nutrition .hstreak{color:var(--amber);}
+
+/* Nutrition toggle */
+.nutr-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--r-xl);border:0.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.2s;margin-bottom:8px;}
+.nutr-card:active{transform:scale(0.98);}
+.nutr-card.hit{background:var(--amber-bg);border-color:rgba(212,144,74,0.2);}
+.nutr-icon{width:42px;height:42px;border-radius:50%;background:var(--surface2);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text3);flex-shrink:0;transition:all 0.2s;}
+.nutr-card.hit .nutr-icon{background:var(--amber);border-color:var(--amber);color:white;box-shadow:0 0 14px rgba(212,144,74,0.35);}
+.nutr-body{flex:1;min-width:0;}
+.nutr-title{font-size:14px;font-weight:500;color:var(--text);}
+.nutr-card.hit .nutr-title{color:var(--amber);}
+.nutr-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.nutr-streak{font-size:11px;color:var(--text3);flex-shrink:0;display:flex;align-items:center;gap:3px;}
+.nutr-card.hit .nutr-streak{color:var(--amber);}
+
+/* Macros */
+.macro-bar-row{display:flex;flex-direction:column;gap:8px;}
+.mbar{display:flex;align-items:center;gap:10px;}
+.mbar-lbl{font-size:12px;color:var(--text2);width:52px;}
+.mbar-track{flex:1;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.mbar-fill{height:100%;border-radius:2px;transition:width 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+.mbar-val{font-size:11px;color:var(--text3);min-width:52px;text-align:right;}
+
+/* Food log */
+.food-form{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.food-form input{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--r);padding:11px 14px;font-size:14px;color:var(--text);outline:none;font-family:var(--font-sans);width:100%;}
+.food-form input::placeholder{color:var(--text3);}
+.food-form input:focus{border-color:var(--accent-glow);}
+.food-form-row{display:flex;gap:6px;}
+.food-form-row input{flex:1;min-width:0;}
+.food-item{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--surface2);border-radius:var(--r);margin-bottom:6px;border:0.5px solid var(--border);}
+.food-item:last-child{margin-bottom:0;}
+.food-item-name{font-size:14px;color:var(--text);}
+.food-item-macros{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--text3);}
+
+/* Heatmap */
+.heatmap-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;}
+.heatmap-inner{display:flex;align-items:flex-start;gap:4px;width:max-content;}
+.hm-days{display:grid;grid-template-rows:repeat(7,11px);gap:2px;padding-top:16px;}
+.hm-day{font-size:9px;color:var(--text3);line-height:11px;}
+.hm-months{display:flex;width:max-content;margin-bottom:3px;}
+.hm-month{font-size:9px;color:var(--text3);}
+.hm-grid{display:grid;grid-template-rows:repeat(7,11px);grid-auto-flow:column;gap:2px;width:max-content;}
+.hm-cell{width:11px;height:11px;border-radius:2px;background:var(--surface2);}
+.hm-cell[data-l="1"]{background:rgba(200,169,110,0.25);}
+.hm-cell[data-l="2"]{background:rgba(200,169,110,0.5);}
+.hm-cell[data-l="3"]{background:rgba(200,169,110,0.75);}
+.hm-cell[data-l="4"]{background:var(--accent);}
+.hm-legend{display:flex;align-items:center;gap:4px;margin-top:8px;font-size:10px;color:var(--text3);}
+.hm-leg-cells{display:flex;gap:2px;}
+
+/* Streak page */
+.streak-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.streak-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-xl);padding:14px;position:relative;overflow:hidden;}
+.streak-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);}
+.sc-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.sc-pip{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sc-name{font-size:12px;font-weight:500;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sc-nums{display:flex;gap:14px;}
+.sc-num-val{font-family:var(--font-serif);font-size:22px;color:var(--text);}
+.sc-num-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
+.sc-week{display:flex;gap:3px;margin-top:10px;}
+.sc-day{flex:1;height:4px;border-radius:2px;background:var(--surface3);}
+
+/* ── Budget styles ── */
+.b-tabs{display:flex;gap:0;border-bottom:0.5px solid var(--border);margin-bottom:0;}
+.b-tab{flex:1;padding:12px 4px;font-size:12px;font-family:var(--font-sans);font-weight:500;color:var(--text3);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all 0.15s;text-align:center;}
+.b-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.b-page{display:none;}
+.b-page.active{display:block;}
+.money-hero{text-align:center;padding:8px 0 16px;}
+.money-hero-val{font-family:var(--font-serif);font-size:42px;line-height:1;}
+.money-hero-val.pos{color:var(--green);}
+.money-hero-val.neg{color:var(--red);}
+.money-hero-lbl{font-size:12px;color:var(--text3);margin-top:6px;text-transform:uppercase;letter-spacing:0.08em;}
+.stat-tile{background:var(--surface2);border-radius:var(--r-lg);padding:13px 14px;position:relative;overflow:hidden;}
+.stat-tile::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 var(--r-lg) var(--r-lg);}
+.stat-tile.income::after{background:var(--green);}
+.stat-tile.bills-t::after{background:var(--red);}
+.stat-tile.saving::after{background:var(--accent);}
+.stat-tile.spent-t::after{background:var(--blue);}
+.stat-tile-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.stat-tile-val{font-family:var(--font-serif);font-size:20px;color:var(--text);line-height:1;}
+.stat-tile-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.budget-bar-wrap{margin-bottom:16px;}
+.budget-bar-labels{display:flex;justify-content:space-between;margin-bottom:6px;}
+.bbar-lbl{font-size:11px;color:var(--text3);}
+.bbar-val{font-size:11px;color:var(--accent);font-weight:500;}
+.budget-track{height:8px;background:var(--surface3);border-radius:6px;overflow:hidden;}
+.budget-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green),#a0d060);transition:width 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+.budget-fill.warning{background:linear-gradient(90deg,var(--accent),#f0d080);}
+.budget-fill.danger{background:linear-gradient(90deg,var(--red),#e08080);}
+.bill-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border);}
+.bill-row:last-child{border-bottom:none;padding-bottom:0;}
+.bill-left{display:flex;align-items:center;gap:10px;}
+.bill-icon{width:34px;height:34px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.bill-name{font-size:14px;color:var(--text);}
+.bill-freq{font-size:11px;color:var(--text3);margin-top:1px;}
+.bill-amt{font-family:var(--font-serif);font-size:17px;color:var(--red);}
+.exp-form{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.exp-form input,.exp-form select{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--r);padding:11px 14px;font-size:14px;color:var(--text);outline:none;font-family:var(--font-sans);width:100%;}
+.exp-form input::placeholder{color:var(--text3);}
+.exp-form input:focus,.exp-form select:focus{border-color:var(--accent-glow);}
+.exp-form select option{background:var(--surface2);}
+.exp-form-row{display:flex;gap:8px;}
+.exp-form-row input{flex:1;}
+.exp-item{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--surface2);border-radius:var(--r);margin-bottom:6px;border:0.5px solid var(--border);}
+.exp-item:last-child{margin-bottom:0;}
+.exp-item-left{flex:1;min-width:0;}
+.exp-item-name{font-size:14px;color:var(--text);}
+.exp-item-meta{font-size:11px;color:var(--text3);margin-top:1px;}
+.exp-item-amt{font-family:var(--font-serif);font-size:16px;color:var(--red);}
+.cat-pill{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.cat-pill.food{background:rgba(122,173,74,0.15);color:var(--green);}
+.cat-pill.transport{background:rgba(90,159,212,0.15);color:var(--blue);}
+.cat-pill.personal{background:rgba(200,169,110,0.15);color:var(--accent);}
+.cat-pill.entertainment{background:rgba(155,143,224,0.15);color:var(--purple);}
+.cat-pill.other{background:var(--surface3);color:var(--text3);}
+.b-chart-wrap{position:relative;height:200px;margin-top:8px;}
+.year-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.month-card{background:var(--surface2);border-radius:var(--r-lg);padding:12px;border:0.5px solid var(--border);}
+.month-card.current{border-color:var(--accent-glow);background:var(--accent-dim);}
+.month-name{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.month-income{font-size:13px;color:var(--green);font-weight:500;}
+.month-spent{font-size:13px;color:var(--red);}
+.month-net{font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* Shared */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-xl);padding:16px;margin-bottom:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);}
+.card-title{font-family:var(--font-serif);font-size:17px;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.card-title i{font-size:16px;color:var(--text3);}
+.card-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title-row .card-title{margin-bottom:0;}
+.add-btn{background:var(--accent);border:none;border-radius:var(--r);padding:11px 18px;font-size:13px;color:#0e0e0d;cursor:pointer;font-weight:600;font-family:var(--font-sans);white-space:nowrap;transition:opacity 0.15s;}
+.add-btn:active{opacity:0.8;}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px 4px;display:flex;align-items:center;transition:color 0.15s;}
+.del-btn:active{color:var(--red);}
+.empty{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;}
+.loading-overlay.hidden{display:none;}
+.loading-logo{font-family:var(--font-serif);font-size:36px;color:var(--accent);font-style:italic;}
+.loading-spinner{width:24px;height:24px;border:1.5px solid var(--surface3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+.loading-text{font-size:12px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-logo">Daily</div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading your data</div>
+</div>
+<div class="sync-bar" id="sync-bar"></div>
+<div class="sync-pill" id="sync-pill">Saved</div>
+
+<div class="app">
+  <!-- Dynamic header -->
+  <div class="header" id="main-header">
+    <div class="header-inner" id="habit-header">
+      <div>
+        <div class="greeting" id="greeting">Good <em>morning</em></div>
+        <div class="header-date" id="header-date"></div>
+      </div>
+      <div class="header-right">
+        <div class="header-ring">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="18" fill="none" stroke="var(--surface3)" stroke-width="3"/>
+            <circle id="ring-circle" cx="22" cy="22" r="18" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113" style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.6s cubic-bezier(0.34,1.56,0.64,1)"/>
+          </svg>
+          <div class="ring-pct" id="ring-pct">0%</div>
+        </div>
+      </div>
+    </div>
+    <div class="date-nav" id="habit-date-nav">
+      <button class="nav-arrow" onclick="changeDay(-1)"><i class="ti ti-chevron-left"></i></button>
+      <button class="today-chip" onclick="goToday()" id="today-chip">Today</button>
+      <button class="nav-arrow" onclick="changeDay(1)" id="next-btn"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <!-- Budget header (hidden by default) -->
+    <div id="budget-header" style="display:none">
+      <div class="budget-header-inner">
+        <div class="app-title">Budget</div>
+        <div class="period-badge" id="period-badge"></div>
+      </div>
+      <div class="b-tabs" style="margin-top:12px">
+        <button class="b-tab active" onclick="showBTab('overview',this)">Overview</button>
+        <button class="b-tab" onclick="showBTab('fortnightly',this)">Fortnightly</button>
+        <button class="b-tab" onclick="showBTab('bills',this)">Bills</button>
+        <button class="b-tab" onclick="showBTab('yearly',this)">Yearly</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div id="page-home" class="page active">
+      <div class="day-progress">
+        <div class="progress-card">
+          <div class="progress-top">
+            <div class="progress-label">Today's progress</div>
+            <div class="progress-fraction"><span id="prog-done">0</span> <span>/ 12 done</span></div>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+          <div class="progress-segments" id="prog-segs"></div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-lbl">30-day avg</div><div class="stat-val" id="h-avg">—</div><div class="stat-sub">completion</div></div>
+        <div class="stat-card"><div class="stat-lbl">Best streak</div><div class="stat-val" id="h-streak">0</div><div class="stat-sub">days in a row</div></div>
+        <div class="stat-card"><div class="stat-lbl">Days tracked</div><div class="stat-val" id="h-days">0</div><div class="stat-sub">this year</div></div>
+        <div class="stat-card"><div class="stat-lbl">Total done</div><div class="stat-val" id="h-total">0</div><div class="stat-sub">all time</div></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="chart-title">Progress</div>
+          <div class="chart-range">
+            <button class="cr-btn active" onclick="setChartRange(7,this)">7d</button>
+            <button class="cr-btn" onclick="setChartRange(14,this)">14d</button>
+            <button class="cr-btn" onclick="setChartRange(30,this)">30d</button>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="leg"><span class="leg-dot" style="background:var(--green)"></span>Work</span>
+          <span class="leg"><span class="leg-dot" style="background:var(--blue)"></span>Health</span>
+          <span class="leg"><span class="leg-dot" style="background:var(--purple)"></span>Growth</span>
+          <span class="leg"><span class="leg-dot" style="background:var(--amber)"></span>Nutrition</span>
+        </div>
+        <div style="position:relative;height:160px"><canvas id="progressChart"></canvas></div>
+      </div>
+      <div id="home-habits"></div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Year <i class="ti ti-calendar"></i></div>
+        <div class="heatmap-wrap">
+          <div class="heatmap-inner">
+            <div class="hm-days"><div class="hm-day"></div><div class="hm-day">M</div><div class="hm-day"></div><div class="hm-day">W</div><div class="hm-day"></div><div class="hm-day">F</div><div class="hm-day"></div></div>
+            <div class="hm-right"><div id="hm-months" class="hm-months"></div><div id="hm-grid" class="hm-grid"></div></div>
+          </div>
+        </div>
+        <div class="hm-legend">Less <div class="hm-leg-cells"><div class="hm-cell"></div><div class="hm-cell" data-l="1"></div><div class="hm-cell" data-l="2"></div><div class="hm-cell" data-l="3"></div><div class="hm-cell" data-l="4"></div></div> More</div>
+      </div>
+    </div>
+
+    <!-- HABITS -->
+    <div id="page-habits" class="page">
+      <div id="habits-list"></div>
+      <div class="sec-lbl">Nutrition</div>
+      <div id="habits-nutr"></div>
+    </div>
+
+    <!-- NUTRITION -->
+    <div id="page-nutrition" class="page">
+      <div id="nutr-toggle"></div>
+      <div class="card">
+        <div class="card-title">Macros</div>
+        <div id="nutr-macros"></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Log food <i class="ti ti-plus"></i></div>
+        <div class="food-form">
+          <input id="fn" placeholder="Food name" autocomplete="off"/>
+          <div class="food-form-row">
+            <input id="fc" placeholder="kcal" type="number" min="0" inputmode="decimal"/>
+            <input id="fp" placeholder="protein" type="number" min="0" inputmode="decimal"/>
+            <input id="fcarb" placeholder="carbs" type="number" min="0" inputmode="decimal"/>
+            <input id="ff" placeholder="fat" type="number" min="0" inputmode="decimal"/>
+            <button class="add-btn" onclick="addFood()">Add</button>
+          </div>
+        </div>
+        <div id="food-log"></div>
+      </div>
+    </div>
+
+    <!-- STREAKS -->
+    <div id="page-streaks" class="page">
+      <div class="stats-row" style="margin-bottom:16px">
+        <div class="stat-card"><div class="stat-lbl">Best streak</div><div class="stat-val" id="s-best">0</div><div class="stat-sub">days</div></div>
+        <div class="stat-card"><div class="stat-lbl">Total check-ins</div><div class="stat-val" id="s-total">0</div><div class="stat-sub">all time</div></div>
+      </div>
+      <div class="streak-grid" id="streak-grid"></div>
+    </div>
+
+    <!-- BUDGET -->
+    <div id="page-budget" class="page">
+      <!-- Overview -->
+      <div id="b-overview" class="b-page active">
+        <div class="card" style="margin-top:16px">
+          <div class="money-hero">
+            <div class="money-hero-val" id="ov-remaining">$0</div>
+            <div class="money-hero-lbl">Remaining this fortnight</div>
+          </div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar-labels"><div class="bbar-lbl">Spent</div><div class="bbar-val" id="ov-bar-val">0%</div></div>
+            <div class="budget-track"><div class="budget-fill" id="ov-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-tile income"><div class="stat-tile-lbl">Fortnightly income</div><div class="stat-tile-val" id="ov-income">$0</div><div class="stat-tile-sub">after tax</div></div>
+          <div class="stat-tile bills-t"><div class="stat-tile-lbl">Fixed costs</div><div class="stat-tile-val" id="ov-fixed">$0</div><div class="stat-tile-sub">per fortnight</div></div>
+          <div class="stat-tile spent-t"><div class="stat-tile-lbl">Expenses</div><div class="stat-tile-val" id="ov-spent">$0</div><div class="stat-tile-sub">this fortnight</div></div>
+          <div class="stat-tile saving"><div class="stat-tile-lbl">Remaining</div><div class="stat-tile-val" id="ov-saved">$0</div><div class="stat-tile-sub">this fortnight</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Spending by category</div>
+          <div class="b-chart-wrap"><canvas id="breakdownChart"></canvas></div>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="card-title">Recent expenses</div>
+          <div id="ov-recent"></div>
+        </div>
+      </div>
+
+      <!-- Fortnightly expenses -->
+      <div id="b-fortnightly" class="b-page">
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">Log fortnightly expense</div>
+          <div class="exp-form">
+            <input id="exp-name" placeholder="What did you spend on?" autocomplete="off"/>
+            <div class="exp-form-row">
+              <input id="exp-amt" placeholder="$0.00" type="number" min="0" step="0.01" inputmode="decimal"/>
+              <select id="exp-cat">
+                <option value="food">🛒 Food</option>
+                <option value="transport">🚗 Transport</option>
+                <option value="personal">👤 Personal</option>
+                <option value="entertainment">🎮 Entertainment</option>
+                <option value="other">📦 Other</option>
+              </select>
+              <button class="add-btn" onclick="addExpense()">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="sec-lbl" id="exp-period-lbl">This fortnight</div>
+        <div id="exp-list"></div>
+      </div>
+
+      <!-- Bills -->
+      <div id="b-bills" class="b-page">
+        <div class="card" style="margin-top:16px">
+          <div class="card-title-row">
+            <div class="card-title" style="margin-bottom:0">Monthly bills</div>
+            <div style="font-family:var(--font-serif);font-size:20px;color:var(--red)" id="bills-monthly-total">$0</div>
+          </div>
+          <div id="bills-monthly-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title-row">
+            <div class="card-title" style="margin-bottom:0">Fortnightly</div>
+            <div style="font-family:var(--font-serif);font-size:20px;color:var(--red)" id="bills-fn-total">$0</div>
+          </div>
+          <div id="bills-fn-list"></div>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="card-title">Add a bill</div>
+          <div class="exp-form">
+            <input id="bill-name" placeholder="Bill name" autocomplete="off"/>
+            <div class="exp-form-row">
+              <input id="bill-amt" placeholder="$0.00" type="number" min="0" step="0.01" inputmode="decimal"/>
+              <select id="bill-freq">
+                <option value="monthly">Monthly</option>
+                <option value="fortnightly">Fortnightly</option>
+                <option value="weekly">Weekly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <button class="add-btn" onclick="addBill()">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Yearly -->
+      <div id="b-yearly" class="b-page">
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">Year at a glance — <span id="yearly-year"></span></div>
+          <div class="stats-row" style="margin-bottom:0">
+            <div class="stat-tile income"><div class="stat-tile-lbl">Annual income</div><div class="stat-tile-val" id="yr-income">$0</div></div>
+            <div class="stat-tile bills-t"><div class="stat-tile-lbl">Fixed bills</div><div class="stat-tile-val" id="yr-bills">$0</div></div>
+            <div class="stat-tile spent-t"><div class="stat-tile-lbl">Total spent</div><div class="stat-tile-val" id="yr-spent">$0</div></div>
+            <div class="stat-tile saving"><div class="stat-tile-lbl">Net saved</div><div class="stat-tile-val" id="yr-saved">$0</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Monthly overview</div>
+          <div class="b-chart-wrap" style="height:220px"><canvas id="yearlyChart"></canvas></div>
+        </div>
+        <div class="year-grid" id="month-grid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="showPage('home',this)"><i class="ti ti-home"></i><span>Home</span></button>
+    <button class="nav-item" onclick="showPage('habits',this)"><i class="ti ti-check"></i><span>Habits</span></button>
+    <button class="nav-item" onclick="showPage('nutrition',this)"><i class="ti ti-salad"></i><span>Nutrition</span></button>
+    <button class="nav-item" onclick="showPage('streaks',this)"><i class="ti ti-flame"></i><span>Streaks</span></button>
+    <button class="nav-item" onclick="showPage('budget',this)"><i class="ti ti-wallet"></i><span>Budget</span></button>
+  </nav>
+</div>
+
+<script>
+// ── Supabase ──────────────────────────────────────────────────────
+const SB_URL='https://klqqcknhrblunimpbuwy.supabase.co';
+const SB_KEY='sb_publishable_BeNCPH7R65cx02ymUEpDTg_s6RWmwUa';
+async function sbFetch(path,method='GET',body=null){
+  const opts={method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'resolution=merge-duplicates,return=minimal':''}};
+  if(body)opts.body=JSON.stringify(body);
+  const res=await fetch(SB_URL+path,opts);
+  if(!res.ok)throw new Error(await res.text());
+  const t=await res.text();return t?JSON.parse(t):[];
+}
+
+// ── Habit constants ───────────────────────────────────────────────
+const STEP_GOAL=10000;
+const HABITS=[
+  {id:'h1',name:'Deep work block',sub:'2+ hours focused',cat:'work'},
+  {id:'h2',name:'Clear inbox',sub:'Reach inbox zero',cat:'work'},
+  {id:'h3',name:'Plan tomorrow',sub:'5 min end-of-day review',cat:'work'},
+  {id:'h4',name:'Exercise',sub:'1 hour of movement',cat:'health'},
+  {id:'h5',name:'Sleep by 11pm',sub:'7-8 hours target',cat:'health'},
+  {id:'h6',name:'Drink 4L water',sub:'Stay hydrated',cat:'health'},
+  {id:'h10',name:'Take vitamins',sub:'Daily vitamins & supplements',cat:'health'},
+  {id:'h7',name:'Read',sub:'20+ minutes',cat:'growth'},
+  {id:'h8',name:'Learn something new',sub:'Course, podcast, or article',cat:'growth'},
+  {id:'h9',name:'Journaling',sub:'Reflect on the day',cat:'growth'},
+];
+const GOALS={cal:1110,protein:140,carbs:70,fat:30};
+const CAT_COLORS={work:'#7aad4a',health:'#5a9fd4',growth:'#9b8fe0',nutrition:'#d4904a'};
+const CAT_NAMES={work:'Work & productivity',health:'Health & fitness',growth:'Personal growth'};
+const TOTAL=HABITS.length+2;
+
+// ── Budget constants ──────────────────────────────────────────────
+const FORTNIGHTLY_INCOME=1914.38;
+const MONTH_NAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const FULL_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CAT_ICONS={food:'🛒',transport:'🚗',personal:'👤',entertainment:'🎮',other:'📦'};
+const B_CAT_COLORS={food:'#7aad4a',transport:'#5a9fd4',personal:'#c8a96e',entertainment:'#9b8fe0',other:'#5a5751'};
+const DEFAULT_BILLS=[
+  {id:'bill-rent',name:'Rent',amount:400,freq:'monthly',icon:'🏠'},
+  {id:'bill-anytime',name:'Anytime Fitness',amount:47.90,freq:'monthly',icon:'💪'},
+  {id:'bill-telstra',name:'Telstra',amount:70,freq:'monthly',icon:'📱'},
+  {id:'bill-revenue',name:'Revenue NSW',amount:100,freq:'monthly',icon:'🏛️'},
+  {id:'bill-claude',name:'Claude (Anthropic)',amount:34,freq:'monthly',icon:'🤖'},
+  {id:'bill-greens',name:'Greens (Personal)',amount:300,freq:'fortnightly',icon:'👤'},
+  {id:'bill-stocks',name:'Stocks',amount:300,freq:'fortnightly',icon:'📈'},
+];
+
+// ── State ─────────────────────────────────────────────────────────
+let hData={},steps={},nutr={},food={};
+let expenses=[],bills=[];
+let offset=0,chartRange=7,chart=null,breakdownChart=null,yearlyChart=null;
+let page='home',bTab='overview';
+
+// ── Sync ──────────────────────────────────────────────────────────
+let syncT=null;
+function showSync(msg,err=false){
+  const p=document.getElementById('sync-pill'),b=document.getElementById('sync-bar');
+  p.textContent=msg;p.className='sync-pill show';b.className=err?'sync-bar':'sync-bar syncing';
+  clearTimeout(syncT);syncT=setTimeout(()=>{p.className='sync-pill';b.className='sync-bar';},2000);
+}
+
+// ── Date ──────────────────────────────────────────────────────────
+function dk(o=0){const d=new Date();d.setDate(d.getDate()+o);return d.toISOString().slice(0,10);}
+function today(){return dk(0);}
+function fmtDate(o=0){const d=new Date();d.setDate(d.getDate()+o);if(o===0)return'Today';if(o===-1)return'Yesterday';return d.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});}
+function formatDate(d){return new Date(d).toLocaleDateString('en-AU',{day:'numeric',month:'short'});}
+function fmt(n){return '$'+Math.abs(n).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtShort(n){return '$'+Math.abs(n).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function getFortnightStart(){const now=new Date();const soy=new Date(now.getFullYear(),0,1);const days=Math.floor((now-soy)/86400000);const fnDay=days%14;const s=new Date(now);s.setDate(s.getDate()-fnDay);return s.toISOString().slice(0,10);}
+function getFortnightEnd(){const s=new Date(getFortnightStart());s.setDate(s.getDate()+13);return s.toISOString().slice(0,10);}
+
+// ── Load all ──────────────────────────────────────────────────────
+async function loadAll(){
+  try{
+    const[hr,sr,nr,fr,er,br]=await Promise.all([
+      sbFetch('/rest/v1/habit_logs?select=date,habit_id,done'),
+      sbFetch('/rest/v1/steps_logs?select=date,hit'),
+      sbFetch('/rest/v1/nutrition_logs?select=date,hit'),
+      sbFetch('/rest/v1/food_logs?select=id,date,name,cal,protein,carbs,fat,auto_fill&order=created_at.asc'),
+      sbFetch('/rest/v1/budget_expenses?select=*&order=date.desc,created_at.desc').catch(()=>[]),
+      sbFetch('/rest/v1/budget_bills?select=*&order=created_at.asc').catch(()=>[]),
+    ]);
+    hData={};hr.forEach(r=>{if(!hData[r.date])hData[r.date]={};hData[r.date][r.habit_id]=r.done;});
+    steps={};sr.forEach(r=>{steps[r.date]=r.hit;});
+    nutr={};nr.forEach(r=>{nutr[r.date]=r.hit;});
+    food={};fr.forEach(r=>{if(!food[r.date])food[r.date]=[];food[r.date].push({id:r.id,name:r.name,cal:r.cal,p:r.protein,c:r.carbs,f:r.fat,autoFill:r.auto_fill});});
+    expenses=er.map(r=>({id:r.id,name:r.name,amount:parseFloat(r.amount),category:r.category,date:r.date}));
+    const userBillIds=br.map(r=>r.id);
+    bills=[
+      ...DEFAULT_BILLS.filter(b=>!userBillIds.includes(b.id)),
+      ...br.map(r=>({id:r.id,name:r.name,amount:parseFloat(r.amount),freq:r.freq,icon:r.icon||'💰'})),
+    ];
+    // Seed default bills
+    for(const b of DEFAULT_BILLS){
+      try{await sbFetch('/rest/v1/budget_bills','POST',[{id:b.id,name:b.name,amount:b.amount,freq:b.freq,icon:b.icon}]);}catch(e){}
+    }
+  }catch(e){console.error(e);bills=DEFAULT_BILLS.map(b=>({...b}));showSync('Partial load',true);}
+}
+
+// ── Habit save helpers ────────────────────────────────────────────
+async function saveHabit(date,id,done){showSync('Saving…');try{await sbFetch('/rest/v1/habit_logs','POST',[{date,habit_id:id,done}]);showSync('Saved');}catch(e){showSync('Error',true);}}
+async function saveSteps(date,hit){showSync('Saving…');try{await sbFetch('/rest/v1/steps_logs','POST',[{date,hit}]);showSync('Saved');}catch(e){showSync('Error',true);}}
+async function saveNutr(date,hit){showSync('Saving…');try{await sbFetch('/rest/v1/nutrition_logs','POST',[{date,hit}]);showSync('Saved');}catch(e){showSync('Error',true);}}
+async function saveFoodItem(date,item){showSync('Saving…');try{const r=await sbFetch('/rest/v1/food_logs?select=id','POST',[{date,name:item.name,cal:item.cal,protein:item.p,carbs:item.c,fat:item.f,auto_fill:item.autoFill||false}]);showSync('Saved');return r&&r[0]?r[0].id:item.id;}catch(e){showSync('Error',true);return item.id;}}
+async function deleteFoodItem(id){showSync('Saving…');try{await sbFetch('/rest/v1/food_logs?id=eq.'+id,'DELETE');showSync('Saved');}catch(e){showSync('Error',true);}}
+async function deleteAutoFill(date){try{await sbFetch('/rest/v1/food_logs?date=eq.'+date+'&auto_fill=eq.true','DELETE');}catch(e){}}
+
+// ── Budget save helpers ───────────────────────────────────────────
+async function saveExpense(exp){showSync('Saving…');try{const r=await sbFetch('/rest/v1/budget_expenses?select=id','POST',[{name:exp.name,amount:exp.amount,category:exp.category,date:exp.date}]);showSync('Saved');return r&&r[0]?r[0].id:exp.id;}catch(e){showSync('Error',true);return exp.id;}}
+async function deleteExpenseDB(id){showSync('Saving…');try{await sbFetch('/rest/v1/budget_expenses?id=eq.'+id,'DELETE');showSync('Saved');}catch(e){showSync('Error',true);}}
+async function saveBillDB(b){try{await sbFetch('/rest/v1/budget_bills','POST',[{id:b.id,name:b.name,amount:b.amount,freq:b.freq,icon:b.icon||'💰'}]);}catch(e){}}
+async function deleteBillDB(id){try{await sbFetch('/rest/v1/budget_bills?id=eq.'+id,'DELETE');}catch(e){}}
+
+// ── Budget calcs ──────────────────────────────────────────────────
+function billsPerFortnight(){return bills.reduce((s,b)=>b.freq==='fortnightly'?s+b.amount:b.freq==='monthly'?s+b.amount*12/26:b.freq==='weekly'?s+b.amount*2:b.freq==='yearly'?s+b.amount/26:s,0);}
+function billsPerMonth(){return bills.reduce((s,b)=>b.freq==='monthly'?s+b.amount:b.freq==='fortnightly'?s+b.amount*26/12:b.freq==='weekly'?s+b.amount*52/12:b.freq==='yearly'?s+b.amount/12:s,0);}
+function expensesInFortnight(){const s=getFortnightStart(),e=getFortnightEnd();return expenses.filter(x=>x.date>=s&&x.date<=e).reduce((t,x)=>t+x.amount,0);}
+function expensesInMonth(year,month){const p=`${year}-${String(month+1).padStart(2,'0')}`;return expenses.filter(x=>x.date.startsWith(p)).reduce((t,x)=>t+x.amount,0);}
+function incomePerMonth(){return FORTNIGHTLY_INCOME*26/12;}
+
+// ── Navigation ────────────────────────────────────────────────────
+function updateHeader(){
+  const hr=new Date().getHours();
+  document.getElementById('greeting').innerHTML=hr<12?'Good <em>morning</em>':hr<17?'Good <em>afternoon</em>':'Good <em>evening</em>';
+  const d=new Date();d.setDate(d.getDate()+offset);
+  document.getElementById('header-date').textContent=d.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('today-chip').textContent=fmtDate(offset);
+  document.getElementById('next-btn').disabled=offset>=0;
+}
+
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');page=name;
+  // Toggle header
+  const hh=document.getElementById('habit-header');
+  const hn=document.getElementById('habit-date-nav');
+  const bh=document.getElementById('budget-header');
+  if(name==='budget'){hh.style.display='none';hn.style.display='none';bh.style.display='block';renderBudgetTab();}
+  else{hh.style.display='flex';hn.style.display='flex';bh.style.display='none';}
+  if(name==='home'){renderHome();setTimeout(renderChart,50);}
+  if(name==='habits')renderHabits();
+  if(name==='nutrition')renderNutrition();
+  if(name==='streaks')renderStreaks();
+}
+
+function showBTab(name,btn){
+  document.querySelectorAll('.b-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.b-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('b-'+name).classList.add('active');
+  btn.classList.add('active');bTab=name;
+  renderBudgetTab();
+}
+function renderBudgetTab(){
+  document.getElementById('period-badge').textContent=formatDate(getFortnightStart())+' – '+formatDate(getFortnightEnd());
+  if(bTab==='overview')renderBOverview();
+  if(bTab==='fortnightly')renderBFortnightly();
+  if(bTab==='bills')renderBBills();
+  if(bTab==='yearly')renderBYearly();
+}
+
+function changeDay(dir){if(offset+dir>0)return;offset+=dir;updateHeader();refresh();}
+function goToday(){offset=0;updateHeader();refresh();}
+function refresh(){
+  if(page==='home'){renderHome();setTimeout(renderChart,50);}
+  if(page==='habits')renderHabits();
+  if(page==='nutrition')renderNutrition();
+}
+
+// ── Habit logic ───────────────────────────────────────────────────
+function totalForDay(key){return HABITS.filter(h=>hData[key]&&hData[key][h.id]).length+(steps[key]?1:0)+(nutr[key]?1:0);}
+function getStreak(id,isN=false,isS=false){let s=0,o=offset;while(true){const d=new Date();d.setDate(d.getDate()+o);const k=d.toISOString().slice(0,10);const hit=isS?steps[k]:isN?nutr[k]:hData[k]&&hData[k][id];if(hit){s++;o--;}else break;}return s;}
+function getLongest(id,isN=false,isS=false){let keys=isS?Object.keys(steps).filter(k=>steps[k]).sort():isN?Object.keys(nutr).filter(k=>nutr[k]).sort():Object.keys(hData).filter(k=>hData[k]&&hData[k][id]).sort();let max=0,cur=0,prev=null;keys.forEach(k=>{if(prev){const d=(new Date(k)-new Date(prev))/86400000;cur=d===1?cur+1:1;}else cur=1;max=Math.max(max,cur);prev=k;});return max;}
+function totalComp(id,isN=false,isS=false){if(isS)return Object.values(steps).filter(Boolean).length;if(isN)return Object.values(nutr).filter(Boolean).length;return Object.values(hData).filter(d=>d&&d[id]).length;}
+function toggle(id){const key=dk(offset);if(!hData[key])hData[key]={};hData[key][id]=!hData[key][id];saveHabit(key,id,hData[key][id]);if(page==='home')renderHome();if(page==='habits')renderHabits();}
+function toggleSteps(){const key=dk(offset);steps[key]=!steps[key];saveSteps(key,steps[key]);if(page==='home')renderHome();if(page==='habits')renderHabits();}
+async function toggleNutr(){
+  const key=dk(offset);nutr[key]=!nutr[key];saveNutr(key,nutr[key]);
+  if(nutr[key]){if(food[key])food[key]=food[key].filter(f=>!f.autoFill);await deleteAutoFill(key);const item={id:Date.now(),name:'Nutrition targets met (MFP)',cal:GOALS.cal,p:GOALS.protein,c:GOALS.carbs,f:GOALS.fat,autoFill:true};if(!food[key])food[key]=[];food[key].push(item);const dbId=await saveFoodItem(key,item);item.id=dbId;}
+  else{if(food[key])food[key]=food[key].filter(f=>!f.autoFill);await deleteAutoFill(key);}
+  if(page==='home')renderHome();if(page==='habits')renderHabits();if(page==='nutrition')renderNutrition();
+}
+
+function macroTilesHTML(){
+  const key=dk(offset);const items=food[key]||[];
+  const tot=items.reduce((a,f)=>({cal:a.cal+f.cal,p:a.p+f.p,c:a.c+f.c,f:a.f+f.f}),{cal:0,p:0,c:0,f:0});
+  return`<div class="macro-bar-row">
+    <div class="mbar"><div class="mbar-lbl" style="color:var(--accent)">Calories</div><div class="mbar-track"><div class="mbar-fill" style="width:${Math.min(100,Math.round(tot.cal/GOALS.cal*100))}%;background:var(--accent)"></div></div><div class="mbar-val">${Math.round(tot.cal)}/${GOALS.cal}</div></div>
+    <div class="mbar"><div class="mbar-lbl" style="color:var(--blue)">Protein</div><div class="mbar-track"><div class="mbar-fill" style="width:${Math.min(100,Math.round(tot.p/GOALS.protein*100))}%;background:var(--blue)"></div></div><div class="mbar-val">${Math.round(tot.p)}/${GOALS.protein}g</div></div>
+    <div class="mbar"><div class="mbar-lbl" style="color:#e09b3d">Carbs</div><div class="mbar-track"><div class="mbar-fill" style="width:${Math.min(100,Math.round(tot.c/GOALS.carbs*100))}%;background:#e09b3d"></div></div><div class="mbar-val">${Math.round(tot.c)}/${GOALS.carbs}g</div></div>
+    <div class="mbar"><div class="mbar-lbl" style="color:var(--purple)">Fat</div><div class="mbar-track"><div class="mbar-fill" style="width:${Math.min(100,Math.round(tot.f/GOALS.fat*100))}%;background:var(--purple)"></div></div><div class="mbar-val">${Math.round(tot.f)}/${GOALS.fat}g</div></div>
+  </div>`;
+}
+function nutrToggleHTML(compact=false){const key=dk(offset);const hit=!!nutr[key];const streak=getStreak(null,true);return`<div class="nutr-card ${hit?'hit':''}" onclick="toggleNutr()" style="${compact?'':'margin-bottom:14px'}"><div class="nutr-icon"><i class="ti ti-${hit?'check':'salad'}"></i></div><div class="nutr-body"><div class="nutr-title">${hit?'Nutrition targets hit!':'Mark nutrition targets hit'}</div><div class="nutr-sub">1110 kcal · 140g protein · 70g carbs · 30g fat</div></div><div class="nutr-streak"><i class="ti ti-flame"></i>${streak}d</div></div>`;}
+function stepsRowHTML(){const key=dk(offset);const hit=!!steps[key];const streak=getStreak(null,false,true);return`<div class="habit-row ${hit?'done health':''}" onclick="toggleSteps()"><div class="hcheck"><i class="ti ti-check"></i></div><div class="hinfo"><div class="hname">Hit 10k steps</div><div class="hsub">Check off once you reach 10,000 steps</div></div><div class="hstreak"><i class="ti ti-flame"></i>${streak}d</div></div>`;}
+
+function renderHome(){
+  updateHeader();
+  const key=dk(offset);const done=totalForDay(key);const pct=Math.round(done/TOTAL*100);
+  const circ=2*Math.PI*18;
+  document.getElementById('ring-circle').style.strokeDashoffset=circ*(1-pct/100);
+  document.getElementById('ring-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-done').textContent=done;
+  const segsEl=document.getElementById('prog-segs');
+  if(segsEl){
+    const dd=hData[key]||{};
+    const segDefs=[
+      {label:'Work',done:HABITS.filter(h=>h.cat==='work'&&dd[h.id]).length,total:HABITS.filter(h=>h.cat==='work').length},
+      {label:'Health',done:HABITS.filter(h=>h.cat==='health'&&dd[h.id]).length+(steps[key]?1:0),total:HABITS.filter(h=>h.cat==='health').length+1},
+      {label:'Growth',done:HABITS.filter(h=>h.cat==='growth'&&dd[h.id]).length,total:HABITS.filter(h=>h.cat==='growth').length},
+      {label:'Nutrition',done:nutr[key]?1:0,total:1},
+    ];
+    segsEl.innerHTML=segDefs.map(s=>{const dots=Array.from({length:s.total},(_,i)=>`<div class="seg-dot ${i<s.done?'done':''}"></div>`).join('');return`<div class="progress-seg"><div style="display:flex;gap:4px;margin-bottom:4px">${dots}</div><div class="seg-label">${s.label}</div></div>`;}).join('');
+  }
+  let t30=0,p30=0;
+  for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);HABITS.forEach(h=>{p30++;if(hData[k]&&hData[k][h.id])t30++;});p30++;if(steps[k])t30++;p30++;if(nutr[k])t30++;}
+  document.getElementById('h-avg').textContent=(p30?Math.round(t30/p30*100):0)+'%';
+  const allS=[...HABITS.map(h=>getStreak(h.id)),getStreak(null,true),getStreak(null,false,true)];
+  document.getElementById('h-streak').textContent=Math.max(...allS,0);
+  document.getElementById('h-days').textContent=Object.keys(hData).length;
+  const totalCI=Object.values(hData).reduce((s,d)=>s+(d?Object.values(d).filter(Boolean).length:0),0)+Object.values(nutr).filter(Boolean).length+Object.values(steps).filter(Boolean).length;
+  document.getElementById('h-total').textContent=totalCI;
+  const dayData=hData[key]||{};let html='';
+  ['work','health','growth'].forEach(cat=>{
+    html+=`<div class="sec-lbl">${CAT_NAMES[cat]}</div><div class="habit-list">`;
+    HABITS.filter(h=>h.cat===cat).forEach(h=>{const d=!!dayData[h.id];html+=`<div class="habit-row ${d?'done '+h.cat:''}" onclick="toggle('${h.id}')"><div class="hcheck"><i class="ti ti-check"></i></div><div class="hinfo"><div class="hname">${h.name}</div></div></div>`;});
+    if(cat==='health')html+=stepsRowHTML();
+    html+='</div>';
+  });
+  const nHit=!!nutr[key];
+  html+=`<div class="sec-lbl">Nutrition</div><div class="habit-list"><div class="habit-row ${nHit?'done nutrition':''}" onclick="toggleNutr()"><div class="hcheck"><i class="ti ti-check"></i></div><div class="hinfo"><div class="hname">Hit nutrition targets</div></div></div></div>`;
+  document.getElementById('home-habits').innerHTML=html;
+  renderHeatmap();
+}
+
+function renderChart(){
+  const labels=[],wD=[],hD=[],gD=[],nD=[];
+  const wH=HABITS.filter(h=>h.cat==='work'),hH=HABITS.filter(h=>h.cat==='health'),gH=HABITS.filter(h=>h.cat==='growth');
+  for(let i=chartRange-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);const dd=hData[k]||{};labels.push(d.toLocaleDateString('en-AU',{day:'numeric',month:'short'}));wD.push(wH.length?Math.round(wH.filter(h=>dd[h.id]).length/wH.length*100):0);hD.push(Math.round((hH.filter(h=>dd[h.id]).length+(steps[k]?1:0))/(hH.length+1)*100));gD.push(gH.length?Math.round(gH.filter(h=>dd[h.id]).length/gH.length*100):0);nD.push(nutr[k]?100:0);}
+  if(chart)chart.destroy();
+  chart=new Chart(document.getElementById('progressChart').getContext('2d'),{type:'line',data:{labels,datasets:[{label:'Work',data:wD,borderColor:'#7aad4a',tension:0.4,pointRadius:0,fill:true,backgroundColor:'rgba(122,173,74,0.06)',borderWidth:1.5},{label:'Health',data:hD,borderColor:'#5a9fd4',tension:0.4,pointRadius:0,fill:true,backgroundColor:'rgba(90,159,212,0.06)',borderWidth:1.5,borderDash:[4,3]},{label:'Growth',data:gD,borderColor:'#9b8fe0',tension:0.4,pointRadius:0,fill:true,backgroundColor:'rgba(155,143,224,0.06)',borderWidth:1.5,borderDash:[2,2]},{label:'Nutrition',data:nD,borderColor:'#d4904a',tension:0.4,pointRadius:0,fill:false,borderWidth:1.5,borderDash:[6,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e1e1b',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}%`}}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10},color:'#5a5751'},grid:{color:'rgba(255,255,255,0.04)'},border:{display:false}},x:{ticks:{font:{size:10},maxRotation:0,autoSkip:true,color:'#5a5751'},grid:{display:false},border:{display:false}}}}});
+}
+function setChartRange(r,btn){chartRange=r;document.querySelectorAll('.cr-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChart();}
+
+function renderHeatmap(){
+  const year=new Date().getFullYear();const start=new Date(year,0,1),end=new Date(year,11,31);const adj=(start.getDay()+6)%7;const cells=[];
+  for(let i=0;i<adj;i++)cells.push(null);const cur=new Date(start);while(cur<=end){cells.push(new Date(cur));cur.setDate(cur.getDate()+1);}
+  const hm=document.getElementById('hm-grid');if(!hm)return;hm.innerHTML='';
+  cells.forEach(d=>{const cell=document.createElement('div');cell.className='hm-cell';if(d){const k=d.toISOString().slice(0,10);const done=totalForDay(k);const l=done===0?0:done<=TOTAL*.25?1:done<=TOTAL*.5?2:done<=TOTAL*.75?3:4;if(l)cell.setAttribute('data-l',l);cell.title=d.toLocaleDateString('en-AU',{day:'numeric',month:'short'})+' — '+done+'/'+TOTAL;}else cell.style.background='transparent';hm.appendChild(cell);});
+  const mEl=document.getElementById('hm-months');mEl.innerHTML='';
+  const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];let col=0,mp={};
+  cells.forEach((d,i)=>{if(d&&d.getDate()===1)mp[d.getMonth()]=Math.floor(i/7);});
+  MN.forEach((m,idx)=>{if(mp[idx]!==undefined){const s=document.createElement('div');s.className='hm-month';s.textContent=m;s.style.marginLeft=((mp[idx]-col)*13)+'px';col=mp[idx];mEl.appendChild(s);}});
+}
+
+function renderHabits(){
+  const key=dk(offset);const dayData=hData[key]||{};let html='';
+  ['work','health','growth'].forEach(cat=>{html+=`<div class="sec-lbl">${CAT_NAMES[cat]}</div><div class="habit-list">`;HABITS.filter(h=>h.cat===cat).forEach(h=>{const d=!!dayData[h.id];const streak=getStreak(h.id);html+=`<div class="habit-row ${d?'done '+h.cat:''}" onclick="toggle('${h.id}')"><div class="hcheck"><i class="ti ti-check"></i></div><div class="hinfo"><div class="hname">${h.name}</div><div class="hsub">${h.sub}</div></div><div class="hstreak"><i class="ti ti-flame"></i>${streak}d</div></div>`;});if(cat==='health')html+=stepsRowHTML();html+='</div>';});
+  document.getElementById('habits-list').innerHTML=html;
+  document.getElementById('habits-nutr').innerHTML=nutrToggleHTML(true);
+}
+
+function renderNutrition(){
+  document.getElementById('nutr-toggle').innerHTML=nutrToggleHTML(false);
+  document.getElementById('nutr-macros').innerHTML=macroTilesHTML();
+  const key=dk(offset);const items=food[key]||[];
+  document.getElementById('food-log').innerHTML=items.length?items.map(f=>`<div class="food-item"><div><div class="food-item-name">${f.name}</div><div class="food-item-macros"><span>${Math.round(f.cal)}kcal</span><span style="color:var(--blue)">P${Math.round(f.p)}g</span><span style="color:#e09b3d">C${Math.round(f.c)}g</span><span style="color:var(--purple)">F${Math.round(f.f)}g</span></div></div><button class="del-btn" onclick="deleteFood('${f.id}')"><i class="ti ti-x"></i></button></div>`).join(''):'<div class="empty">No food logged yet</div>';
+}
+async function addFood(){const name=document.getElementById('fn').value.trim();const cal=parseFloat(document.getElementById('fc').value)||0;const p=parseFloat(document.getElementById('fp').value)||0;const c=parseFloat(document.getElementById('fcarb').value)||0;const f=parseFloat(document.getElementById('ff').value)||0;if(!name&&cal===0)return;const key=dk(offset);if(!food[key])food[key]=[];const item={id:Date.now(),name:name||'Food',cal,p,c,f,autoFill:false};food[key].push(item);['fn','fc','fp','fcarb','ff'].forEach(id=>document.getElementById(id).value='');renderNutrition();const dbId=await saveFoodItem(key,item);item.id=dbId;}
+async function deleteFood(id){const key=dk(offset);food[key]=(food[key]||[]).filter(f=>String(f.id)!==String(id));await deleteFoodItem(id);renderNutrition();if(page==='home')renderHome();}
+
+function renderStreaks(){
+  const allS=[...HABITS.map(h=>getStreak(h.id)),getStreak(null,true),getStreak(null,false,true)];
+  document.getElementById('s-best').textContent=Math.max(...allS,0);
+  const total=Object.values(hData).reduce((s,d)=>s+(d?Object.values(d).filter(Boolean).length:0),0)+Object.values(nutr).filter(Boolean).length+Object.values(steps).filter(Boolean).length;
+  document.getElementById('s-total').textContent=total;
+  const grid=document.getElementById('streak-grid');grid.innerHTML='';
+  [...HABITS,{id:'__steps__',name:'10k steps',cat:'health'},{id:'__nutr__',name:'Nutrition targets',cat:'nutrition'}].forEach(h=>{
+    const isN=h.id==='__nutr__',isS=h.id==='__steps__';
+    const streak=getStreak(isN||isS?null:h.id,isN,isS);const longest=getLongest(isN||isS?null:h.id,isN,isS);const total=totalComp(isN||isS?null:h.id,isN,isS);
+    const week=Array.from({length:7},(_,j)=>{const d=new Date();d.setDate(d.getDate()-(6-j));const k=d.toISOString().slice(0,10);return isS?!!steps[k]:isN?!!nutr[k]:!!(hData[k]&&hData[k][h.id]);});
+    const color=CAT_COLORS[h.cat];
+    grid.innerHTML+=`<div class="streak-card"><div class="sc-head"><div class="sc-pip" style="background:${color}"></div><div class="sc-name">${h.name}</div></div><div class="sc-nums"><div><div class="sc-num-val">${streak}</div><div class="sc-num-lbl">Now</div></div><div><div class="sc-num-val">${longest}</div><div class="sc-num-lbl">Best</div></div><div><div class="sc-num-val">${total}</div><div class="sc-num-lbl">Total</div></div></div><div class="sc-week">${week.map(d=>`<div class="sc-day" style="${d?'background:'+color+';':''}"></div>`).join('')}</div></div>`;
+  });
+}
+
+// ── Budget renders ────────────────────────────────────────────────
+function renderBOverview(){
+  const fixed=billsPerFortnight();const spent=expensesInFortnight();const totalOut=fixed+spent;
+  const remaining=FORTNIGHTLY_INCOME-totalOut;const pct=Math.min(100,Math.round(totalOut/FORTNIGHTLY_INCOME*100));
+  const remEl=document.getElementById('ov-remaining');remEl.textContent=(remaining>=0?'':'-')+fmt(remaining);remEl.className='money-hero-val '+(remaining>=0?'pos':'neg');
+  const bar=document.getElementById('ov-bar');bar.style.width=pct+'%';bar.className='budget-fill'+(pct>90?' danger':pct>70?' warning':'');
+  document.getElementById('ov-bar-val').textContent=pct+'%';
+  document.getElementById('ov-income').textContent=fmt(FORTNIGHTLY_INCOME);
+  document.getElementById('ov-fixed').textContent=fmt(fixed);
+  document.getElementById('ov-spent').textContent=fmt(spent);
+  document.getElementById('ov-saved').textContent=(remaining>=0?'':'-')+fmt(remaining);
+  const s=getFortnightStart(),e=getFortnightEnd();const fnExp=expenses.filter(x=>x.date>=s&&x.date<=e);
+  const cats=['food','transport','personal','entertainment','other'];const catTotals=cats.map(c=>fnExp.filter(x=>x.category===c).reduce((t,x)=>t+x.amount,0));
+  if(breakdownChart)breakdownChart.destroy();
+  if(fnExp.length>0){breakdownChart=new Chart(document.getElementById('breakdownChart').getContext('2d'),{type:'doughnut',data:{labels:cats.map(c=>c.charAt(0).toUpperCase()+c.slice(1)),datasets:[{data:catTotals,backgroundColor:cats.map(c=>B_CAT_COLORS[c]),borderColor:'transparent',borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{position:'right',labels:{color:'#9a9489',font:{size:11,family:'DM Sans'},boxWidth:8,boxHeight:8,borderRadius:4,padding:12}},tooltip:{backgroundColor:'#1e1e1b',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:c=>` ${fmt(c.raw)}`}}}}});}
+  else{const ctx=document.getElementById('breakdownChart').getContext('2d');ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);ctx.fillStyle='#5a5751';ctx.font='13px DM Sans';ctx.textAlign='center';ctx.fillText('No expenses this fortnight',ctx.canvas.width/2,ctx.canvas.height/2);}
+  const recent=expenses.slice(0,5);
+  document.getElementById('ov-recent').innerHTML=recent.length?recent.map(e=>`<div class="exp-item"><div class="exp-item-left"><div class="exp-item-name">${CAT_ICONS[e.category]||'📦'} ${e.name}</div><div class="exp-item-meta">${formatDate(e.date)} · <span class="cat-pill ${e.category}">${e.category}</span></div></div><div style="display:flex;align-items:center;gap:8px"><div class="exp-item-amt">-${fmt(e.amount)}</div></div></div>`).join(''):'<div class="empty">No expenses yet</div>';
+}
+
+function renderBFortnightly(){
+  const s=getFortnightStart(),e=getFortnightEnd();
+  document.getElementById('exp-period-lbl').textContent=`This fortnight (${formatDate(s)} – ${formatDate(e)})`;
+  const fnExp=expenses.filter(x=>x.date>=s&&x.date<=e);
+  document.getElementById('exp-list').innerHTML=fnExp.length?fnExp.map(e=>`<div class="exp-item"><div class="exp-item-left"><div class="exp-item-name">${CAT_ICONS[e.category]||'📦'} ${e.name}</div><div class="exp-item-meta">${formatDate(e.date)} · <span class="cat-pill ${e.category}">${e.category}</span></div></div><div style="display:flex;align-items:center;gap:8px"><div class="exp-item-amt">-${fmt(e.amount)}</div><button class="del-btn" onclick="removeExpense('${e.id}')"><i class="ti ti-x"></i></button></div></div>`).join(''):'<div class="empty">No expenses logged this fortnight</div>';
+}
+
+async function addExpense(){
+  const name=document.getElementById('exp-name').value.trim();const amount=parseFloat(document.getElementById('exp-amt').value)||0;const category=document.getElementById('exp-cat').value;
+  if(!name||amount<=0)return;
+  const exp={id:Date.now().toString(),name,amount,category,date:today()};
+  expenses.unshift(exp);['exp-name','exp-amt'].forEach(id=>document.getElementById(id).value='');
+  renderBFortnightly();renderBOverview();
+  const dbId=await saveExpense(exp);exp.id=dbId;
+}
+async function removeExpense(id){expenses=expenses.filter(e=>String(e.id)!==String(id));await deleteExpenseDB(id);renderBFortnightly();renderBOverview();}
+
+function renderBBills(){
+  const monthly=bills.filter(b=>b.freq==='monthly');const fn=bills.filter(b=>b.freq==='fortnightly');const weekly=bills.filter(b=>b.freq==='weekly');const yearly=bills.filter(b=>b.freq==='yearly');
+  const allFn=[...fn,...weekly.map(b=>({...b,_displayAmt:b.amount*2}))];
+  const monthlyTotal=[...monthly,...yearly.map(b=>({...b,amount:b.amount/12}))].reduce((s,b)=>s+b.amount,0);
+  const fnTotal=fn.reduce((s,b)=>s+b.amount,0)+weekly.reduce((s,b)=>s+b.amount*2,0);
+  document.getElementById('bills-monthly-total').textContent='-'+fmt(monthlyTotal);
+  document.getElementById('bills-fn-total').textContent='-'+fmt(fnTotal);
+  const billRow=(b)=>`<div class="bill-row"><div class="bill-left"><div class="bill-icon">${b.icon||'💰'}</div><div><div class="bill-name">${b.name}</div><div class="bill-freq">${b.freq.charAt(0).toUpperCase()+b.freq.slice(1)}</div></div></div><div style="display:flex;align-items:center;gap:8px"><div class="bill-amt">-${fmt(b._displayAmt||b.amount)}</div>${!DEFAULT_BILLS.find(d=>d.id===b.id)?`<button class="del-btn" onclick="removeBill('${b.id}')"><i class="ti ti-x"></i></button>`:''}</div></div>`;
+  document.getElementById('bills-monthly-list').innerHTML=[...monthly,...yearly].map(billRow).join('')||'<div class="empty">No monthly bills</div>';
+  document.getElementById('bills-fn-list').innerHTML=allFn.map(billRow).join('')||'<div class="empty">No fortnightly bills</div>';
+}
+async function addBill(){
+  const name=document.getElementById('bill-name').value.trim();const amount=parseFloat(document.getElementById('bill-amt').value)||0;const freq=document.getElementById('bill-freq').value;
+  if(!name||amount<=0)return;const bill={id:'bill-'+Date.now(),name,amount,freq,icon:'💰'};bills.push(bill);
+  ['bill-name','bill-amt'].forEach(id=>document.getElementById(id).value='');await saveBillDB(bill);renderBBills();renderBOverview();
+}
+async function removeBill(id){bills=bills.filter(b=>b.id!==id);await deleteBillDB(id);renderBBills();renderBOverview();}
+
+function renderBYearly(){
+  const year=new Date().getFullYear();document.getElementById('yearly-year').textContent=year;
+  const annualIncome=FORTNIGHTLY_INCOME*26;const annualBills=billsPerMonth()*12;const annualSpent=expenses.filter(e=>e.date.startsWith(year+'')).reduce((s,x)=>s+x.amount,0);const netSaved=annualIncome-annualBills-annualSpent;
+  document.getElementById('yr-income').textContent=fmtShort(annualIncome);document.getElementById('yr-bills').textContent=fmtShort(annualBills);document.getElementById('yr-spent').textContent=fmtShort(annualSpent);
+  const yrS=document.getElementById('yr-saved');yrS.textContent=(netSaved>=0?'':'-')+fmtShort(netSaved);yrS.style.color=netSaved>=0?'var(--green)':'var(--red)';
+  const monthlyIncome=Array(12).fill(incomePerMonth());const monthlyBills=Array(12).fill(billsPerMonth());const monthlySpent=Array.from({length:12},(_,m)=>expensesInMonth(year,m));
+  if(yearlyChart)yearlyChart.destroy();
+  yearlyChart=new Chart(document.getElementById('yearlyChart').getContext('2d'),{type:'bar',data:{labels:MONTH_NAMES,datasets:[{label:'Income',data:monthlyIncome,backgroundColor:'rgba(122,173,74,0.2)',borderColor:'#7aad4a',borderWidth:1.5,borderRadius:4},{label:'Bills',data:monthlyBills,backgroundColor:'rgba(212,90,90,0.2)',borderColor:'#d45a5a',borderWidth:1.5,borderRadius:4},{label:'Expenses',data:monthlySpent,backgroundColor:'rgba(90,159,212,0.25)',borderColor:'#5a9fd4',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9a9489',font:{size:11,family:'DM Sans'},boxWidth:8,boxHeight:8,borderRadius:4}},tooltip:{backgroundColor:'#1e1e1b',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.raw)}`}}},scales:{x:{ticks:{color:'#5a5751',font:{size:10}},grid:{display:false},border:{display:false}},y:{ticks:{callback:v=>'$'+v.toLocaleString(),color:'#5a5751',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'},border:{display:false}}}}});
+  const now=new Date();
+  document.getElementById('month-grid').innerHTML=FULL_MONTHS.map((m,i)=>{const inc=incomePerMonth();const bls=billsPerMonth();const spt=expensesInMonth(year,i);const net=inc-bls-spt;return`<div class="month-card ${i===now.getMonth()?'current':''}"><div class="month-name">${MONTH_NAMES[i]}</div><div class="month-income">+${fmtShort(inc)}</div><div class="month-spent">-${fmtShort(bls+spt)}</div><div class="month-net" style="color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':'-'}${fmtShort(net)}</div></div>`;}).join('');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────
+async function boot(){
+  updateHeader();await loadAll();
+  document.getElementById('loading-overlay').classList.add('hidden');
+  renderHome();setTimeout(renderChart,100);
+}
+boot();
+</script>
+</body>
+</html>
